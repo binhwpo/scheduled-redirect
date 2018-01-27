@@ -92,6 +92,17 @@ add_filter( 'sca_add_action', 'sr_save_redirect_action', 10, 2 );
 /* Handle redirect action */
 
 function sr_redirect( $action ) {
-	wp_redirect( $action['redirect_url'] );
-	exit;
+	if ( $action['post_id'] == get_the_ID() ) {
+		wp_redirect( $action['redirect_url'] );
+		exit;
+	}
 }
+add_action( 'sca_do_redirect', 'sr_redirect', 10 , 1);
+
+
+function sr_init() {
+	remove_action( 'wp_loaded', 'sca_scheduler' );
+	add_action( 'wp', 'sca_scheduler' );
+}
+add_action( 'plugins_loaded', 'sr_init' );
+
