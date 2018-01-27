@@ -28,12 +28,21 @@ add_action( 'sca_load_additional_form_data', 'sr_load_additional_form_data', 10,
 
 /* Enqueue javascript to handle the form data */
 function sr_admin_scripts( $scripts ) {
-
+	unset( $scripts['sca-backend'] );
 	$scripts['sr_redirect'] = array(
 		'src'       => plugin_dir_url( __FILE__ ) . 'scheduled-redirect.js',
-		'deps'      => array( 'sca-backend' ),
-		'version'   => SCRIPT_DEBUG === TRUE ? time() : '1.0',
+		'deps'      => array( 'jquery' ),
+		'version'   => SCRIPT_DEBUG === TRUE ? time() : $sVersion,
 		'in_footer' => TRUE,
+		'localize'  => array(
+			'sca_vars' => array(
+				'label_taxonomy'   => __( 'Taxonomy', 'scheduled-content-actions' ),
+				'label_term'       => __( 'Term', 'scheduled-content-actions' ),
+				'label_meta_name'  => __( 'Meta Name', 'scheduled-content-actions' ),
+				'label_meta_value' => __( 'Meta Value', 'scheduled-content-actions' ),
+				'label_title'      => __( 'Change Title', 'scheduled-content-actions' ),
+			)
+		),
 	);
 
 	return $scripts;
