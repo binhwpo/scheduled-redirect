@@ -50,14 +50,21 @@ function sr_load_redirect_form() {
 	$pages = get_pages( array( 'child_of' => $_REQUEST[ 'post_id' ] ) ) ;
 	?>
 	<p>
-		<label for="sr_redirect">
-			<select class="large-text" name="redirect_url" id="sr_redirect">
-				<option value=""><?php _e( 'Choose a Page', 'scheduled-redirect' ); ?></option>
-				<?php foreach ( $pages as $page ) : ?>
-					<option value="<?php echo get_permalink($page->ID); ?>"><?php echo $page->post_title; ?></option>
-				<?php endforeach; ?>
-			</select>
+		<label for="sr_subpage_url">
+			<?php _e( 'Choose a subpage', 'scheduled-redirect' ); ?>
 		</label>
+		<select class="large-text" id="sr_subpage_url">
+			<option value=""><?php _e( 'No page', 'scheduled-redirect' ); ?></option>
+			<?php foreach ( $pages as $page ) : ?>
+				<option value="<?php echo get_permalink($page->ID); ?>"><?php echo $page->post_title; ?></option>
+			<?php endforeach; ?>
+		</select>
+	</p>
+	<p>
+		<label for="sr_redirect_url">
+			<?php _e( 'Redirect URL', 'scheduled-redirect' ); ?>			
+		</label>
+		<input type="text" class="large-text" name="redirect_url" id="sr_redirect_url" />
 	</p>
 	<?php
 	exit;
@@ -66,9 +73,8 @@ function sr_load_redirect_form() {
 /* Save action */
 
 function sr_save_redirect_action( $action, $aRequestData ) {
-	$sActionType = $aRequestData[ 'type' ];
-	if ( $sActionType == 'redirect' ) {
-		$action['url'] = $aRequestData['url'];
+	if ( $aRequestData[ 'type' ] == 'redirect' ) {
+		$action['redirect_url'] = $aRequestData['redirect_url'];
 	}
 	return $action;
 } 
@@ -77,6 +83,6 @@ add_filter( 'sca_add_action', 'sr_save_redirect_action', 10, 2 );
 /* Handle redirect action */
 
 function sr_redirect( $action ) {
-	wp_redirect( $action['url'] );
+	wp_redirect( $action['redirect_url'] );
 	exit;
 }

@@ -15,14 +15,18 @@
 				var postVars = {
 					action: 'sca_load_additional_form_data',
 					type: type,
-					post_id: $( '#post_ID' ).val()
+					post_id: $( '#post_ID' ).val(),
+					redirect_url: $( '#sr_redirect_url' ).val()
 				}
 				$.post( ajaxurl, postVars, function( response ) {
 					$( '.sca-additional-form-data' ).html( '<hr>' + response );
-					ScheduledContentActionsScripts.bindAdditionalTaxonomyAction();
 				} );
 			}
 			return false;
 		} );
+
+		$( document ).on ( 'change', '#sr_subpage_url', function() {
+			$( '#sr_redirect_url' ).val( $( '#sr_subpage_url' ).val() );
+		});
 	});
 } )( jQuery );
