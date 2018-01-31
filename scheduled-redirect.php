@@ -32,7 +32,7 @@ function sr_admin_scripts( $scripts ) {
 	$scripts['sr_redirect'] = array(
 		'src'       => plugin_dir_url( __FILE__ ) . 'scheduled-redirect.js',
 		'deps'      => array( 'jquery' ),
-		'version'   => SCRIPT_DEBUG === TRUE ? time() : $sVersion,
+		'version'   => '',
 		'in_footer' => TRUE,
 		'localize'  => array(
 			'sca_vars' => array(
@@ -97,12 +97,48 @@ function sr_redirect( $action ) {
 		exit;
 	}
 }
-add_action( 'sca_do_redirect', 'sr_redirect', 10 , 1);
 
+function sr_js_redirect( $action, $actionTime ) {
+	if ( $action['post_id'] == get_the_ID() ) { 
+		$timeOut = 1000 * ( $actionTime - current_time( 'timestamp' ) ) ;
+		?>
+		<script type="text/javascript">
+			setTimeout(function () {
+			   window.location.href = "<?php echo $action['redirect_url']; ?>";
+			}, <?php echo $timeOut ?>);
+		</script>
+<?	}
+}
+
+function sr_scheduler() {
+
+	$aCurrentActions = get_option( '_sca_current_actions' );
+	if ( empty( $aCurrentActions ) )
+		return;
+
+	foreach ( $aCurrentActions as $iPostId => $aTiming ) {
+		foreach ( $aTiming as $iTime => $aActions ) {
+			foreach ( $aActions as $aAction ) {
+				$aAction[ 'post_id' ] = $iPostId;
+				if ( $aAction[ 'type' ] == 'redirect' ) {
+					if ( $iTime > current_time( 'timestamp' ) ) {
+						sr_js_redirect( $aAction, $iTime );
+					} else {
+						sr_redirect( $aAction );
+					}
+				} else if ( $iTime <= current_time( 'timestamp' ) ) {
+					do_action( 'sca_do_' . $aAction[ 'type' ], $aAction );
+					sca_delete_action( $aAction[ 'post_id' ], $aAction[ 'type' ], $iTime );
+				}
+			}
+		}
+	}
+}
 
 function sr_init() {
 	remove_action( 'wp_loaded', 'sca_scheduler' );
-	add_action( 'wp', 'sca_scheduler' );
+	add_action( 'wp', 'sr_scheduler' );
 }
 add_action( 'plugins_loaded', 'sr_init' );
+
 
