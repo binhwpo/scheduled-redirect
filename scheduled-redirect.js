@@ -177,7 +177,6 @@
  			$( '#sr_redirect_url' ).val( $( '#sr_subpage_url' ).val() );
  		});
 
- 		$( '#sca-type').val('redirect').change();
  	} );
  } )( jQuery );
 

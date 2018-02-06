@@ -12,7 +12,7 @@
 /* Add redirect to the list of actions */
 
 add_filter( 'sca_get_actions', function( $actions ) {
-	$actions = array( 'redirect' => __( 'Redirect', 'scheduled-redirect' ) );
+	$actions = array( 'redirect' => __( 'Redirect', 'scheduled-redirect' ) ) + $actions;
 	return $actions;
 });
 
