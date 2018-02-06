@@ -17,6 +17,7 @@ add_filter( 'sca_get_actions', function( $actions ) {
 });
 
 /* Show action settings in post */
+
 function sr_load_additional_form_data( $type ) {
 
 	// check what form data we should load
@@ -27,8 +28,12 @@ function sr_load_additional_form_data( $type ) {
 add_action( 'sca_load_additional_form_data', 'sr_load_additional_form_data', 10, 1 );
 
 /* Enqueue javascript to handle the form data */
+
 function sr_admin_scripts( $scripts ) {
-	unset( $scripts['sca-backend'] );
+	/* Remove the Scheduled Content Actions javascript file */
+	unset( $scripts['sca-backend'] ); 
+	
+	/* Add Scheduled Redirect javascript file */
 	$scripts['sr_redirect'] = array(
 		'src'       => plugin_dir_url( __FILE__ ) . 'scheduled-redirect.js',
 		'deps'      => array( 'jquery' ),
@@ -56,11 +61,11 @@ add_filter( 'sca_get_admin_scripts', 'sr_admin_scripts', 10, 1 );
  * @return	void
  */
 function sr_load_redirect_form() {
-	$pages = get_pages( array( 'child_of' => $_REQUEST[ 'post_id' ] ) ) ;
+	$pages = get_pages( ) ;
 	?>
 	<p>
 		<label for="sr_subpage_url">
-			<?php _e( 'Choose a subpage', 'scheduled-redirect' ); ?>
+			<?php _e( 'Choose a page', 'scheduled-redirect' ); ?>
 		</label>
 		<select class="large-text" id="sr_subpage_url">
 			<option value=""><?php _e( 'No page', 'scheduled-redirect' ); ?></option>
@@ -98,6 +103,8 @@ function sr_redirect( $action ) {
 	}
 }
 
+/* Handle redirect using jQuery */
+
 function sr_js_redirect( $action, $actionTime ) {
 	if ( $action['post_id'] == get_the_ID() ) { 
 		$timeOut = 1000 * ( $actionTime - current_time( 'timestamp' ) ) ;
@@ -110,6 +117,8 @@ function sr_js_redirect( $action, $actionTime ) {
 <?	}
 }
 
+/* Handle the scheduled actions */
+
 function sr_scheduler() {
 
 	$aCurrentActions = get_option( '_sca_current_actions' );
@@ -120,13 +129,17 @@ function sr_scheduler() {
 		foreach ( $aTiming as $iTime => $aActions ) {
 			foreach ( $aActions as $aAction ) {
 				$aAction[ 'post_id' ] = $iPostId;
-				if ( $aAction[ 'type' ] == 'redirect' ) {
+
+				if ( $aAction[ 'type' ] == 'redirect' ) { 
+					/* Deal with redirect action */
 					if ( $iTime > current_time( 'timestamp' ) ) {
 						sr_js_redirect( $aAction, $iTime );
 					} else {
 						sr_redirect( $aAction );
 					}
+					/* Would not delete the redirect action for now */
 				} else if ( $iTime <= current_time( 'timestamp' ) ) {
+					/* Deal with other actions */
 					do_action( 'sca_do_' . $aAction[ 'type' ], $aAction );
 					sca_delete_action( $aAction[ 'post_id' ], $aAction[ 'type' ], $iTime );
 				}
@@ -134,6 +147,8 @@ function sr_scheduler() {
 		}
 	}
 }
+
+/* Replace action of Scheduled Content Actions with Scheduled Redirect */
 
 function sr_init() {
 	remove_action( 'wp_loaded', 'sca_scheduler' );
